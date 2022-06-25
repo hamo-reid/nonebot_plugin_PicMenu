@@ -17,6 +17,8 @@ from .img_tool import img2b64
 menu_manager = MenuManager()
 menu_info_path = Path(__file__).parent / 'menu.json'
 menu_manager.load_from_json(menu_info_path)
+export.menu_manager = menu_manager
+
 menu = on_startswith(('菜单', '/菜单'))
 
 @menu.handle()
