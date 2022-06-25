@@ -1,11 +1,3 @@
-# -*- coding:utf-8 -*-
-# @Author   : Hamo
-# @Email    : 190395489@qq.com
-# @Time     : 2022/5/17 23:34
-# @File     : menus.py
-# @Faction  :
-# @Version  :
-# ===============程序开始===============
 from PIL import Image
 from fuzzywuzzy import process, fuzz
 from nonebot import logger
