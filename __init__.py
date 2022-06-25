@@ -1,11 +1,3 @@
-# -*- coding:utf-8 -*-
-# @Author   : Hamo
-# @Email    : 190395489@qq.com
-# @Time     : 2022/5/17 23:33
-# @File     : __init__.py
-# @Faction  :
-# @Version  :
-# ===============程序开始===============
 from nonebot.permission import SUPERUSER
 from nonebot.plugin.on import on_command, on_startswith, on_regex
 from nonebot.adapters.onebot.v11 import Bot, Event
