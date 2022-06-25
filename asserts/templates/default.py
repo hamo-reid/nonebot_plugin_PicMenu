@@ -1,11 +1,3 @@
-# -*- coding:utf-8 -*-
-# @Author   : Hamo
-# @Email    : 190395489@qq.com
-# @Time     : 2022/5/19 2:04
-# @File     : default.py
-# @Faction  :
-# @Version  :
-# ===============程序开始===============
 from PIL import Image
 from img_tool import *
 
