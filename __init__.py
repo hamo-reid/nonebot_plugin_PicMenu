@@ -2,6 +2,8 @@ from nonebot.permission import SUPERUSER
 from nonebot.plugin.on import on_command, on_startswith, on_regex
 from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import MessageSegment
+from nonebot.plugin import export
+export = export()
 
 import re
 from pathlib import Path
