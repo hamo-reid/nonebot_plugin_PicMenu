@@ -5,9 +5,17 @@
 
 <img src="https://img.shields.io/badge/tested_python-3.8.5-blue" alt="python">
 
-<img src="https://img.shields.io/static/v1?label=Nonebot&message=2.0.0%2Dbeta.4&color=green" alt="nonebot">
+<a href="https://github.com/nonebot/nonebot2">
+    <img src="https://img.shields.io/static/v1?label=Nonebot&message=2.0.0%2Dbeta.4&color=green" alt="nonebot">
+</a>
 
-<img src="https://img.shields.io/pypi/v/nonebot_plugin_PicMenu?color=red" alt="pypi">
+<a href="https://pypi.python.org/pypi/nonebot_plugin_PicMenu">
+    <img src="https://img.shields.io/pypi/v/nonebot_plugin_PicMenu?color=red" alt="pypi">
+</a>
+
+<a href="https://pypi.python.org/pypi/nonebot_plugin_PicMenu">
+    <img src="https://img.shields.io/pypi/dm/nonebot_plugin_PicMenu" alt="pypi download">
+</a>
  
 </div>
 
