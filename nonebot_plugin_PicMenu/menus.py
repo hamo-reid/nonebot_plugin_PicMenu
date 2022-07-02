@@ -6,17 +6,19 @@
 # @Faction  :
 # @Version  :
 # ===============程序开始===============
-from PIL import Image
-from dataclasses import dataclass
-from fuzzywuzzy import process, fuzz
 import nonebot.plugin
 import importlib
 import abc
 import json
+from nonebot import logger
 from pathlib import Path
 from typing import Union, Dict, Optional, List, Tuple
+from dataclasses import dataclass
+from fuzzywuzzy import process, fuzz
+from PIL import Image
+from nonebot.plugin import PluginMetadata
 
-from .img_tool import *
+from .img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
 
 # 功能的数据信息
 @dataclass
@@ -36,24 +38,52 @@ class PluginMenuData:
     funcs: List[FuncData]
     template: str
 
-class PicTemplate(object):  # 模板类
+class PicTemplate(metaclass=abc.ABCMeta):  # 模板类
     def __init__(self):
         pass
 
     @abc.abstractmethod
     def load_resource(self):
+        """
+        模板文件加载抽象方法
+        """
         pass
 
     @abc.abstractmethod
     def generate_main_menu(self, data: Tuple[List, List]) -> Image:
+        """
+        生成一级菜单抽象方法
+        :param data: Tuple[List(插件名), List(插件des)]
+        :return: Image对象
+        """
         pass
 
     @abc.abstractmethod
     def generate_plugin_menu(self, plugin_data: PluginMenuData) -> Image:
+        """
+        生成二级菜单抽象方法
+        :param plugin_data: PluginMenuData对象
+        :return: Image对象
+        """
         pass
 
     @abc.abstractmethod
+    def generate_original_plugin_menu(self, plugin_data: PluginMetadata) -> Image:
+        """
+        在插件的PluginMetadata中extra无menu_data的内容时，使用该方法生成简易版图片
+        :param plugin_data: PluginMetadata对象
+        :return: Image对象
+        """
+        pass
+
+
+    @abc.abstractmethod
     def generate_command_details(self, func_data: FuncData) -> Image:
+        """
+        生成三级级菜单抽象方法
+        :param func_data: FuncData对象
+        :return: Image对象
+        """
         pass
 
 class Template(PicTemplate):
@@ -75,11 +105,6 @@ class Template(PicTemplate):
         self.using_font = config['default']
 
     def generate_main_menu(self, data) -> Image:
-        """
-        生成主菜单
-        :param data: 元组(列表， 列表)
-        :return: Image对象
-        """
         column_count = len(data) + 1
         row_count = len(data[0])
         # 数据尺寸测算
@@ -165,11 +190,6 @@ class Template(PicTemplate):
         return main_menu.img
 
     def generate_plugin_menu(self, plugin_data: PluginMenuData) -> Image:
-        """
-        生成插件命令菜单
-        :param plugin_data: PluginMenuData对象
-        :return: Image对象
-        """
         plugin_name = plugin_data.name
         data = plugin_data.funcs
         column_count = 5
@@ -302,16 +322,50 @@ class Template(PicTemplate):
         main_menu.rectangle(Box((border_box_top_left[0] - 25, border_box_top_left[1] - 25),
                                 (50, 50)), outline=self.colors['yellow'], width=5)
         main_menu.add_box('title_box', (0, 0), (main_menu.get_size()[0], 100))
+        # 添加插件名title
         title = simple_text(plugin_name, 60, self.using_font, self.colors['blue'])
         main_menu.img_paste(title, main_menu.align_box('title_box', title, align='center'), isalpha=True)
         return main_menu.img
 
+    def generate_original_plugin_menu(self, plugin_data: PluginMetadata) -> Image:
+        usage_text = multi_text('用法：' + plugin_data.usage,
+                                box_size=(600, 0),
+                                default_font=self.using_font,
+                                default_color=self.colors['blue'],
+                                default_size=self.basic_font_size
+                                )
+        usage_text_size = usage_text.size
+        main_menu = ImageFactory(
+            Image.new(
+                'RGBA',
+                (usage_text_size[0] + 140,
+                 usage_text_size[1] + 210),
+                color=self.colors['white']
+            )
+        )
+        # 给表格添加装饰性边框
+        main_menu.add_box('border_box',
+                          main_menu.align_box('self',
+                                              (usage_text_size[0] + 60, usage_text_size[1] + 70),
+                                              pos=(0, 100),
+                                              align='horizontal'),
+                          (usage_text_size[0] + 70, usage_text_size[1] + 70))
+        main_menu.img_paste(
+            usage_text,
+            main_menu.align_box('border_box', usage_text, align='center'),
+            isalpha=True
+        )
+        main_menu.rectangle('border_box', outline=self.colors['blue'], width=5)
+        border_box_top_left = main_menu.boxes['border_box'].topLeft
+        main_menu.rectangle(Box((border_box_top_left[0] - 25, border_box_top_left[1] - 25),
+                                (50, 50)), outline=self.colors['yellow'], width=5)
+        main_menu.add_box('title_box', (0, 0), (main_menu.get_size()[0], 100))
+        # 添加插件名title
+        title = simple_text(plugin_data.name, 60, self.using_font, self.colors['blue'])
+        main_menu.img_paste(title, main_menu.align_box('title_box', title, align='center'), isalpha=True)
+        return main_menu.img
+
     def generate_command_details(self, func_data: FuncData) -> Image:
-        """
-        生成命令详细数据
-        :param func_data: FuncData对象
-        :return:
-        """
         # 需要生成的列表
         string_list = [
             func_data.func,
@@ -411,7 +465,8 @@ class Template(PicTemplate):
 class DataManager(object):
     def __init__(self):
         self.plugin_menu_data_list: List[PluginMenuData] = []  # 存放menu数据的列表
-        self.plugin_names = []
+        self.plugin_names: List[str] = []  # 有menu_data的插件名列表
+        self.original_plugin_names: List[str] = []  # 无menu_data，但有meta_data的插件名列表
 
     def load_plugin_info(self):
         # 取已经加载的插件信息
@@ -420,6 +475,7 @@ class DataManager(object):
             # 判断有元信息
             if meta_data is None:
                 continue
+            # 判断是否有menu_data
             if 'menu_data' in meta_data.extra:
                 menu_data = meta_data.extra['menu_data']
                 # 判断是否设置模板
@@ -428,6 +484,8 @@ class DataManager(object):
                 else:
                     menu_template = 'default'
             else:
+                self.original_plugin_names.append(meta_data.name)
+                logger.opt(colors=True).success(f'<y>{meta_data.name}</y> 菜单数据已加载')
                 continue
             # 数据整合
             self.plugin_menu_data_list.append(
@@ -448,6 +506,7 @@ class DataManager(object):
                 )
             )
             self.plugin_names.append(meta_data.name)
+            logger.opt(colors=True).success(f'<y>{meta_data.name}</y> 菜单数据已加载')
 
     def get_main_menu_data(self) -> Tuple[List, List]:
         """
@@ -457,9 +516,11 @@ class DataManager(object):
         descriptions = [
             menu_data.description for menu_data in self.plugin_menu_data_list
         ]
-        return self.plugin_names, descriptions
+        for plugin_name in self.original_plugin_names:
+            descriptions.append(nonebot.plugin.get_plugin(plugin_name).metadata.description)
+        return self.plugin_names + self.original_plugin_names, descriptions
 
-    def get_plugin_menu_data(self, plugin_name: str) -> Union[PluginMenuData, str]:
+    def get_plugin_menu_data(self, plugin_name: str) -> Union[PluginMenuData, PluginMetadata, str]:
         """
         获取生成插件菜单的数据
         :param plugin_name: 插件名
@@ -467,16 +528,27 @@ class DataManager(object):
         """
         if plugin_name.isdigit():  # 判断是否为下标，是则进行下标索引，否则进行模糊匹配
             index = int(plugin_name) - 1
+            # 下标在有menu_data的范围内
             if 0 <= index < len(self.plugin_menu_data_list):
                 return self.plugin_menu_data_list[index]
+            # 下标在无menu_data的范围内
+            elif 0 <= index - len(self.plugin_menu_data_list) < len(self.original_plugin_names):
+                return nonebot.plugin.get_plugin(
+                    self.original_plugin_names[index - len(self.plugin_menu_data_list)]
+                ).metadata
             else:  # 超限处理
                 return 'PluginIndexOutRange'
         else:  # 模糊匹配
-            result = self.fuzzy_match_and_check(plugin_name, self.plugin_names)
+            result = self.fuzzy_match_and_check(plugin_name, self.plugin_names + self.original_plugin_names)
+            # 空值返回异常字符串
             if result is not None:
-                for plugin_data in self.plugin_menu_data_list:
-                    if result == plugin_data.name:
-                        return plugin_data
+                # 判断插件是否是无menu_data的插件
+                if result in self.original_plugin_names:
+                    return nonebot.plugin.get_plugin(result).metadata
+                else:
+                    for plugin_data in self.plugin_menu_data_list:
+                        if result == plugin_data.name:
+                            return plugin_data
             else:
                 return 'CannotMatchPlugin'
 
@@ -539,7 +611,7 @@ class TemplateManager(object):
             template_spec.loader.exec_module(template)
             self.template_container.update({template_name: template.Template})
 
-    def select_template(self, template_name: str):  # 选择模板
+    def select_template(self, template_name: str) -> PicTemplate:  # 选择模板
         if template_name in self.template_container:
             return self.template_container[template_name]
         else:
@@ -579,16 +651,24 @@ class MenuManager(object):  # 菜单总管理
         if isinstance(init_data, str):  # 判断是否匹配到插件
             return init_data
         else:
-            data = init_data
-            template = self.template_manager.select_template(data.template)  # 获取模板
-            img = template().generate_plugin_menu(data)
-            return img
+            if isinstance(init_data, PluginMenuData):
+                data = init_data
+                template = self.template_manager.select_template(data.template)  # 获取模板
+                img = template().generate_plugin_menu(data)
+                return img
+            elif isinstance(init_data, PluginMetadata):
+                data = init_data
+                template = self.template_manager.select_template('default')
+                img = template().generate_original_plugin_menu(data)
+                return img
 
-    def generate_command_details_image(self, plugin_name, func) -> Image:  # 生成三级菜单图片
+    def generate_func_details_image(self, plugin_name, func) -> Image:  # 生成三级菜单图片
         plugin_data = self.data_manager.get_plugin_menu_data(plugin_name)
         if isinstance(plugin_data, str):  # 判断是否匹配到插件
             return plugin_data
         else:
+            if isinstance(plugin_data, PluginMetadata):
+                return 'PluginNoFuncData'
             init_data = self.data_manager.get_command_details_data(plugin_data, func)
         if isinstance(init_data, str):  # 判断是否匹配到功能
             return init_data

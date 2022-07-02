@@ -52,12 +52,14 @@ async def _(event: Event):
         result = [x for x in match_result.groups() if x is not None]
         plugin_name = result[0]
         cmd = result[1]
-        temp = menu_manager.generate_command_details_image(plugin_name, cmd)
+        temp = menu_manager.generate_func_details_image(plugin_name, cmd)
         if isinstance(temp, str):
             if temp == 'PluginIndexOutRange':
                 await menu.finish(MessageSegment.text('插件序号不存在'))
             elif temp == 'CannotMatchPlugin':
                 await menu.finish(MessageSegment.text('插件名过于模糊或不存在'))
+            elif temp == 'PluginNoFuncData':
+                await  menu.finish(MessageSegment.text('该插件无功能数据'))
             elif temp == 'CommandIndexOutRange':
                 await menu.finish(MessageSegment.text('命令序号不存在'))
             else:

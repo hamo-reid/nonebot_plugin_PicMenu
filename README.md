@@ -5,10 +5,18 @@
 
 <img src="https://img.shields.io/badge/tested_python-3.8.5-blue" alt="python">
 
-<img src="https://img.shields.io/static/v1?label=Nonebot&message=2.0.0%2Dbeta.4&color=green" alt="nonebot">
+<a href="https://github.com/nonebot/nonebot2">
+    <img src="https://img.shields.io/static/v1?label=Nonebot&message=2.0.0%2Dbeta.4&color=green" alt="nonebot">
+</a>
 
-<img src="https://img.shields.io/pypi/v/nonebot_plugin_PicMenu?color=red" alt="pypi">
- 
+<a href="https://pypi.python.org/pypi/nonebot_plugin_PicMenu">
+    <img src="https://img.shields.io/pypi/v/nonebot_plugin_PicMenu?color=red" alt="pypi">
+</a>
+
+<a href="https://pypi.python.org/pypi/nonebot_plugin_PicMenu">
+    <img src="https://img.shields.io/pypi/dm/nonebot_plugin_PicMenu" alt="pypi download">
+</a>
+
 </div>
 
 ---
@@ -20,6 +28,8 @@
 - 共三级菜单，依次显示插件总表、插件功能总表、功能详情
 - 查询时插件名和功能支持模糊匹配
 - 可更换菜单样式模板[目前仅有默认模板]
+
+## [更新记录](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/History.md)
 
 ## 如何添加菜单
 
@@ -52,6 +62,8 @@ __plugin_meta__ = PluginMetadata(
     }
 )
 ```
+
+**注：plugin_meta中extra无menu_data键值依然可以加载菜单，但无三级菜单**
 
 ## 如何使用插件
 
@@ -91,7 +103,13 @@ __plugin_meta__ = PluginMetadata(
 菜单 测试
 ```
 
-![二级菜单](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuL2.jpg)
+**无menu_data键值**
+
+![二级菜单(无menu_data)](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuL2_2.jpg)
+
+**有menu_data键值**
+
+![二级菜单(有menu_data)](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuL2.jpg)
 
 ### 返回指令信息
 
