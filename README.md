@@ -1,6 +1,6 @@
 <div align="center">
 
-# nonebot-plugin-menu
+# nonebot-plugin-PicMenu
 ### Nonebot2 插件菜单插件
 
 <img src="https://img.shields.io/badge/tested_python-3.8.5-blue" alt="python">
@@ -38,7 +38,7 @@
 **Example:**
 
 ```python
-from nonebot.plugin importPluginMetadata
+from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(
     name='测试插件',
