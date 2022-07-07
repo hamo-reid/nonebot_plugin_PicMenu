@@ -18,7 +18,8 @@ from fuzzywuzzy import process, fuzz
 from PIL import Image
 from nonebot.plugin import PluginMetadata
 
-from .img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
+from img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
+
 
 # 功能的数据信息
 @dataclass
@@ -29,6 +30,7 @@ class FuncData:
     brief_des: str
     detail_des: str
 
+
 # 插件菜单的数据信息
 @dataclass
 class PluginMenuData:
@@ -37,6 +39,7 @@ class PluginMenuData:
     usage: str
     funcs: List[FuncData]
     template: str
+
 
 class PicTemplate(metaclass=abc.ABCMeta):  # 模板类
     def __init__(self):
@@ -76,7 +79,6 @@ class PicTemplate(metaclass=abc.ABCMeta):  # 模板类
         """
         pass
 
-
     @abc.abstractmethod
     def generate_command_details(self, func_data: FuncData) -> Image:
         """
@@ -85,6 +87,7 @@ class PicTemplate(metaclass=abc.ABCMeta):  # 模板类
         :return: Image对象
         """
         pass
+
 
 class Template(PicTemplate):
     def __init__(self):
@@ -385,7 +388,7 @@ class Template(PicTemplate):
         for x in string_list:
             text_img_list.append(
                 multi_text(x,
-                           box_size=(680-info_text_start_x, 0),
+                           box_size=(680 - info_text_start_x, 0),
                            default_font=self.using_font,
                            default_color=self.colors['blue'],
                            default_size=self.basic_font_size,
@@ -398,9 +401,11 @@ class Template(PicTemplate):
         line_max_height_list = [max(x) for x in
                                 zip(map(lambda y: y[1], text_size_list), map(lambda y: y[1], basis_text_size_list))]
         # 文字画板，每行间距30
-        text_img = ImageFactory(Image.new('RGBA',
-                                          (680, sum(line_max_height_list) + 90),
-                                          color=self.colors['white']))
+        text_img = ImageFactory(
+            Image.new('RGBA',
+                      (info_text_start_x + 40 + text_img_list[0].size[0], sum(line_max_height_list) + 90),
+                      color=self.colors['white'])
+        )
         # - 添加func的box
         text_img.add_box('func_box', (0, 0), (680, max((basis_text_size_list[0][1], text_size_list[0][1]))))
         # 粘贴func标签
