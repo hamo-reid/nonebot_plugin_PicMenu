@@ -18,7 +18,7 @@ from fuzzywuzzy import process, fuzz
 from PIL import Image
 from nonebot.plugin import PluginMetadata
 
-from img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
+from .img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
 
 
 # 功能的数据信息
