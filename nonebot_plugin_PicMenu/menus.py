@@ -285,14 +285,25 @@ class Template(PicTemplate):
             )
         # 获取table尺寸
         table_size = table.img.size
-        # usage的文字描述
-        usage_text = multi_text('用法：' + plugin_data.usage,
-                                box_size=(table_size[0] - 30, 0),
+        usage_basic_text = simple_text('用法：',
+                                       size=self.basic_font_size,
+                                       color=self.colors['blue'],
+                                       font=self.using_font)
+        usage_text = multi_text(plugin_data.usage,
+                                box_size=(table_size[0]-30-usage_basic_text.size[0]-10, 0),
                                 default_font=self.using_font,
                                 default_color=self.colors['blue'],
                                 default_size=self.basic_font_size
                                 )
-        usage_text_size = usage_text.size
+        # 合成usage文字图片
+        usage_img = ImageFactory(
+            Image.new('RGBA',
+                      (usage_text.size[0] + 10 + usage_basic_text.size[0], max((usage_text.size[1], usage_basic_text.size[1]))),
+                      self.colors['white'])
+        )
+        usage_img.img_paste(usage_basic_text, (0, 0), isalpha=True)
+        usage_img.img_paste(usage_text, (usage_basic_text.size[0] + 10, 0), isalpha=True)
+        usage_text_size = usage_img.img.size
         # 底部画板，大小根据table大小和usage文字大小确定
         main_menu = ImageFactory(
             Image.new(
@@ -303,9 +314,9 @@ class Template(PicTemplate):
             )
         )
         # 在底部画板上粘贴usage
-        pos, _ = main_menu.img_paste(
-            usage_text,
-            main_menu.align_box('self', usage_text, pos=(0, 130), align='horizontal'),
+        pos, a = main_menu.img_paste(
+            usage_img.img,
+            main_menu.align_box('self', usage_img.img, pos=(0, 130), align='horizontal'),
             isalpha=True
         )
         # 在底部画板上粘贴表格
@@ -331,13 +342,26 @@ class Template(PicTemplate):
         return main_menu.img
 
     def generate_original_plugin_menu(self, plugin_data: PluginMetadata) -> Image:
-        usage_text = multi_text('用法：' + plugin_data.usage,
-                                box_size=(600, 0),
+        usage_basic_text = simple_text('用法：',
+                                       size=self.basic_font_size,
+                                       color=self.colors['blue'],
+                                       font=self.using_font)
+        usage_text = multi_text(plugin_data.usage,
+                                box_size=(600 , 0),
                                 default_font=self.using_font,
                                 default_color=self.colors['blue'],
                                 default_size=self.basic_font_size
                                 )
-        usage_text_size = usage_text.size
+        # 合成usage文字图片
+        usage_img = ImageFactory(
+            Image.new('RGBA', (usage_text.size[0]+10+usage_basic_text.size[0],
+                               max((usage_text.size[1], usage_basic_text.size[1]))),
+                      self.colors['white'])
+        )
+        usage_img.img_paste(usage_basic_text, (0, 0), isalpha=True)
+        usage_img.img_paste(usage_text, (usage_basic_text.size[0] + 10, 0), isalpha=True)
+        usage_text_size = usage_img.img.size
+        # 主画布
         main_menu = ImageFactory(
             Image.new(
                 'RGBA',
@@ -346,18 +370,20 @@ class Template(PicTemplate):
                 color=self.colors['white']
             )
         )
-        # 给表格添加装饰性边框
+        # 添加边框Box
         main_menu.add_box('border_box',
                           main_menu.align_box('self',
                                               (usage_text_size[0] + 60, usage_text_size[1] + 70),
                                               pos=(0, 100),
                                               align='horizontal'),
                           (usage_text_size[0] + 70, usage_text_size[1] + 70))
+        # 粘贴usage文字图片
         main_menu.img_paste(
-            usage_text,
-            main_menu.align_box('border_box', usage_text, align='center'),
+            usage_img.img,
+            main_menu.align_box('border_box', usage_img.img, align='center'),
             isalpha=True
         )
+        # 添加装饰性边框
         main_menu.rectangle('border_box', outline=self.colors['blue'], width=5)
         border_box_top_left = main_menu.boxes['border_box'].topLeft
         main_menu.rectangle(Box((border_box_top_left[0] - 25, border_box_top_left[1] - 25),
@@ -489,7 +515,7 @@ class DataManager(object):
                 else:
                     menu_template = 'default'
             else:
-                self.original_plugin_names.append(meta_data.name)
+                self.original_plugin_names.append(plugin.name)
                 logger.opt(colors=True).success(f'<y>{meta_data.name}</y> 菜单数据已加载')
                 continue
             # 数据整合
@@ -522,6 +548,7 @@ class DataManager(object):
             menu_data.description for menu_data in self.plugin_menu_data_list
         ]
         for plugin_name in self.original_plugin_names:
+            print(plugin_name)
             descriptions.append(nonebot.plugin.get_plugin(plugin_name).metadata.description)
         return self.plugin_names + self.original_plugin_names, descriptions
 
