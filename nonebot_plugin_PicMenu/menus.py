@@ -18,7 +18,7 @@ from fuzzywuzzy import process, fuzz
 from PIL import Image
 from nonebot.plugin import PluginMetadata
 
-from .img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box
+from .img_tool import simple_text, multi_text, calculate_text_size, ImageFactory, Box, auto_resize_text
 
 
 # 功能的数据信息
@@ -103,38 +103,48 @@ class Template(PicTemplate):
 
     def load_resource(self):
         cwd = Path.cwd()
-        with (cwd / 'menu_config'/ 'config.json').open('r', encoding='utf-8') as fp:
+        with (cwd / 'menu_config' / 'config.json').open('r', encoding='utf-8') as fp:
             config = json.loads(fp.read())
         self.using_font = config['default']
 
     def generate_main_menu(self, data) -> Image:
+        # 列数
         column_count = len(data) + 1
+        # 行数
         row_count = len(data[0])
         # 数据尺寸测算
         row_size_list = []
         for x in range(row_count):
+            # 计算index的尺寸
             index_size = calculate_text_size(str(x + 1), self.basic_font_size, self.using_font)
+            # 计算插件名的尺寸
             plugin_name_size = calculate_text_size(data[0][x], self.basic_font_size, self.using_font)
+            # 计算description的尺寸
             plugin_description_size = multi_text(data[1][x],
                                                  default_font=self.using_font,
                                                  default_size=25,
                                                  box_size=(300, 0)
                                                  ).size
             row_size_list.append((index_size, plugin_name_size, plugin_description_size))
-        # 边距
+        # 单元格边距
         margin = 10
+        # 确定每行的行高
         row_height_list = [max(map(lambda i: i[1], row_size_list[x])) + margin * 2 for x in range(row_count)]
+        # 确定每列的列宽
         col_max_width_tuple = (
             max((x[0][0] + margin * 2 for x in row_size_list)),
             max((x[1][0] + margin * 2 for x in row_size_list)),
             max((x[2][0] + margin * 2 for x in row_size_list))
         )
+        # 确定表格底版的长和宽
         table_width = sum(col_max_width_tuple) + 3
         table_height = sum(row_height_list) + 3
         table = ImageFactory(
             Image.new('RGBA', (table_width, table_height), self.colors['white'])
         )
+        # 绘制基点和移动锚点
         initial_point, basis_point = (1, 1), [1, 1]
+        # 为单元格添加box和绘制边框
         for row_id in range(row_count):
             for col_id in range(column_count):
                 box_size = (col_max_width_tuple[col_id], row_height_list[row_id])
@@ -145,6 +155,7 @@ class Template(PicTemplate):
                 basis_point[0] += box_size[0]
             basis_point[0] = initial_point[0]
             basis_point[1] += row_height_list[row_id]
+        # 向单元格中填字
         for x in range(row_count):
             id_text = simple_text(str(x + 1), self.basic_font_size, self.using_font, self.colors['blue'])
             table.img_paste(
@@ -170,25 +181,51 @@ class Template(PicTemplate):
                 isalpha=True
             )
         table_size = table.img.size
+        note_basic_text = simple_text('注：',
+                                      size=self.basic_font_size,
+                                      color=self.colors['blue'],
+                                      font=self.using_font)
+        note_text = multi_text('查询菜单的详细使用方法请发送\n[菜单 PicMenu]',
+                               box_size=(table_size[0] - 30 - note_basic_text.size[0] - 10, 0),
+                               default_font=self.using_font,
+                               default_color=self.colors['blue'],
+                               default_size=self.basic_font_size,
+                               spacing=4,
+                               horizontal_align="middle"
+                               )
+        note_img = ImageFactory(
+            Image.new('RGBA',
+                      (note_text.size[0] + 10 + note_basic_text.size[0],
+                       max((note_text.size[1], note_basic_text.size[1]))),
+                      self.colors['white'])
+        )
+        note_img.img_paste(note_basic_text, (0, 0), isalpha=True)
+        note_img.img_paste(note_text, (note_basic_text.size[0] + 10, 0), isalpha=True)
         main_menu = ImageFactory(
-            Image.new('RGBA', (table_size[0] + 140, table_size[1] + 190), color=self.colors['white'])
+            Image.new('RGBA',
+                      (table_size[0] + 140, table_size[1] + note_img.img.size[1] + 210),
+                      color=self.colors['white'])
+        )
+        main_menu.img_paste(
+            note_img.img,
+            main_menu.align_box('self', table.img, pos=(0, 140), align='horizontal')
         )
         main_menu.img_paste(
             table.img,
-            main_menu.align_box('self', table.img, pos=(0, 150), align='horizontal')
+            main_menu.align_box('self', table.img, pos=(0, 160 + note_img.img.size[1]), align='horizontal')
         )
         main_menu.add_box('border_box',
                           main_menu.align_box('self',
-                                              (table_size[0] + 40, table_size[1] + 70),
+                                              (table_size[0] + 40, table_size[1] + note_img.img.size[1] + 80),
                                               pos=(0, 100),
                                               align='horizontal'),
-                          (table_size[0] + 40, table_size[1] + 70))
+                          (table_size[0] + 40, table_size[1] + note_img.img.size[1] + 90))
         main_menu.rectangle('border_box', outline=self.colors['blue'], width=5)
         border_box_top_left = main_menu.boxes['border_box'].topLeft
         main_menu.rectangle(Box((border_box_top_left[0] - 25, border_box_top_left[1] - 25),
                                 (50, 50)), outline=self.colors['yellow'], width=5)
         main_menu.add_box('title_box', (0, 0), (main_menu.get_size()[0], 100))
-        title = simple_text('插件菜单', 60, self.using_font, self.colors['blue'])
+        title = auto_resize_text('插件菜单', 60, self.using_font, (table_width-60, 66), self.colors['blue'])
         main_menu.img_paste(title, main_menu.align_box('title_box', title, align='center'), isalpha=True)
         return main_menu.img
 
@@ -290,7 +327,7 @@ class Template(PicTemplate):
                                        color=self.colors['blue'],
                                        font=self.using_font)
         usage_text = multi_text(plugin_data.usage,
-                                box_size=(table_size[0]-30-usage_basic_text.size[0]-10, 0),
+                                box_size=(table_size[0] - 30 - usage_basic_text.size[0] - 10, 0),
                                 default_font=self.using_font,
                                 default_color=self.colors['blue'],
                                 default_size=self.basic_font_size
@@ -298,7 +335,8 @@ class Template(PicTemplate):
         # 合成usage文字图片
         usage_img = ImageFactory(
             Image.new('RGBA',
-                      (usage_text.size[0] + 10 + usage_basic_text.size[0], max((usage_text.size[1], usage_basic_text.size[1]))),
+                      (usage_text.size[0] + 10 + usage_basic_text.size[0],
+                       max((usage_text.size[1], usage_basic_text.size[1]))),
                       self.colors['white'])
         )
         usage_img.img_paste(usage_basic_text, (0, 0), isalpha=True)
@@ -337,7 +375,7 @@ class Template(PicTemplate):
                                 (50, 50)), outline=self.colors['yellow'], width=5)
         main_menu.add_box('title_box', (0, 0), (main_menu.get_size()[0], 100))
         # 添加插件名title
-        title = simple_text(plugin_name, 60, self.using_font, self.colors['blue'])
+        title = auto_resize_text(plugin_name, 60, self.using_font, (table_width - 60, 66), self.colors['blue'])
         main_menu.img_paste(title, main_menu.align_box('title_box', title, align='center'), isalpha=True)
         return main_menu.img
 
@@ -347,14 +385,14 @@ class Template(PicTemplate):
                                        color=self.colors['blue'],
                                        font=self.using_font)
         usage_text = multi_text(plugin_data.usage,
-                                box_size=(600 , 0),
+                                box_size=(600, 0),
                                 default_font=self.using_font,
                                 default_color=self.colors['blue'],
                                 default_size=self.basic_font_size
                                 )
         # 合成usage文字图片
         usage_img = ImageFactory(
-            Image.new('RGBA', (usage_text.size[0]+10+usage_basic_text.size[0],
+            Image.new('RGBA', (usage_text.size[0] + 10 + usage_basic_text.size[0],
                                max((usage_text.size[1], usage_basic_text.size[1]))),
                       self.colors['white'])
         )
@@ -390,7 +428,12 @@ class Template(PicTemplate):
                                 (50, 50)), outline=self.colors['yellow'], width=5)
         main_menu.add_box('title_box', (0, 0), (main_menu.get_size()[0], 100))
         # 添加插件名title
-        title = simple_text(plugin_data.name, 60, self.using_font, self.colors['blue'])
+        title = auto_resize_text(plugin_data.name,
+                                 60,
+                                 self.using_font,
+                                 (usage_text_size[0] - 40, 66),
+                                 self.colors['blue']
+                                 )
         main_menu.img_paste(title, main_menu.align_box('title_box', title, align='center'), isalpha=True)
         return main_menu.img
 
@@ -548,7 +591,6 @@ class DataManager(object):
             menu_data.description for menu_data in self.plugin_menu_data_list
         ]
         for plugin_name in self.original_plugin_names:
-            print(plugin_name)
             descriptions.append(nonebot.plugin.get_plugin(plugin_name).metadata.description)
         return self.plugin_names + self.original_plugin_names, descriptions
 
