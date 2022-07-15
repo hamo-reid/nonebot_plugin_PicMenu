@@ -42,7 +42,8 @@ menu = on_startswith('菜单', priority=1)
 
 @driver.on_bot_connect
 async def _(bot: Bot):
-    menu_manager.load_plugin_info()
+    if not menu_manager.data_manager.plugin_menu_data_list:
+        menu_manager.load_plugin_info()
 
 
 @menu.handle()
