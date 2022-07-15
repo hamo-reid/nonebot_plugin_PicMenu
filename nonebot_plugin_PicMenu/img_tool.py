@@ -381,6 +381,7 @@ class ImageFactory(object):
         """
         self.img.show()
 
+
 def simple_text(text: str,
                 size: int,
                 font: str = 'SIMYOU.TTF',
@@ -401,6 +402,7 @@ def simple_text(text: str,
     draw.text((0, 0), text, fill=color, font=using_font)
     return pic
 
+
 def calculate_text_size(text: str,
                         size: int,
                         font: Union[str, Path]):
@@ -413,6 +415,7 @@ def calculate_text_size(text: str,
     """
     using_font = ImageFont.truetype(font, size)
     return using_font.getsize(text)
+
 
 def multi_text(text: str,
                spacing: int = 0,
@@ -427,7 +430,7 @@ def multi_text(text: str,
                h_border_ignore: bool = False,
                v_border_ignore: bool = False,
                get_surplus: bool = False
-               ) -> Union[Img, str]:
+               ) -> Union[Img, Tuple[Img, str]]:
     """
     说明：
         将富文本转换为透明底版图片
@@ -632,18 +635,18 @@ def multi_text(text: str,
         height_list = [x[1] for x in pieces_sizes]
         width_list = [x[0] for x in pieces_sizes]
         max_height = max(height_list)
-        total_width = sum(width_list)+len(width_list)*spacing
+        total_width = sum(width_list) + len(width_list) * spacing
         if horizontal_align == 'left':
             pos = line_start_pos.copy()
         elif horizontal_align == 'middle':
-            pos = [int((true_box_size[0]-total_width)/2), line_start_pos[1]]
+            pos = [int((true_box_size[0] - total_width) / 2), line_start_pos[1]]
         elif horizontal_align == 'right':
-            pos = [true_box_size[0]+line_start_pos[0]-total_width, line_start_pos[1]]
+            pos = [true_box_size[0] + line_start_pos[0] - total_width, line_start_pos[1]]
         for index2, y in enumerate(x):
             if vertical_align == 'top':
                 pos[1] = line_start_pos[1]
             elif vertical_align == 'middle':
-                pos[1] = line_start_pos[1] + int((max_height - pieces_sizes[index2][1])/2)
+                pos[1] = line_start_pos[1] + int((max_height - pieces_sizes[index2][1]) / 2)
             elif vertical_align == 'bottom':
                 pos[1] = line_start_pos[1] + max_height - pieces_sizes[index2][1]
             using_font = ImageFont.truetype(y['fonts'], y['size'])
@@ -679,7 +682,7 @@ def arrange_img(img_list: List[Img],
         raise ValueError('Align value Error.')
     if direction == 'horizontal':
         imgReturnHeight = max([img.size[1] for img in img_list])
-        imgReturnWidth = sum([img.size[0] for img in img_list]) + spacing*(len([img.size[0] for img in img_list])-1)
+        imgReturnWidth = sum([img.size[0] for img in img_list]) + spacing * (len([img.size[0] for img in img_list]) - 1)
         imgReturn = ImageFactory(Image.new('RGBA', (imgReturnWidth, imgReturnHeight), (255, 255, 255, 0)))
         if side == 'top':
             pos = [0, 0]
@@ -691,7 +694,7 @@ def arrange_img(img_list: List[Img],
                 last_pos = pos
                 align_pos = imgReturn.align_box(imgReturn.boxes['self'], img, align='vertical')
                 pos, _ = imgReturn.img_paste(img, (last_pos[0], align_pos[1]))
-                pos = (pos[0]+img.size[0]+spacing, pos[1])
+                pos = (pos[0] + img.size[0] + spacing, pos[1])
         elif side == 'bottom':
             bottom = imgReturn.get_size()[1]
             pos = [0, 0]
@@ -699,7 +702,8 @@ def arrange_img(img_list: List[Img],
                 pos[1] = bottom - img.size[1]
                 pos[0] += imgReturn.img_paste(img, pos=tuple(pos))[1][0] + spacing
     elif direction == 'vertical':
-        imgReturnHeight = sum([img.size[1] for img in img_list]) + spacing*(len([img.size[0] for img in img_list])-1)
+        imgReturnHeight = sum([img.size[1] for img in img_list]) + spacing * (
+                    len([img.size[0] for img in img_list]) - 1)
         imgReturnWidth = max([img.size[0] for img in img_list])
         imgReturn = ImageFactory(Image.new('RGBA', (imgReturnWidth, imgReturnHeight), (255, 255, 255, 0)))
         if side == 'left':
@@ -739,6 +743,7 @@ def alpha2white(img: Img) -> Img:
                 color_d = (255, 255, 255, 255)
                 img.putpixel(dot, color_d)
     return img
+
 
 def rgb2greyscale(img: Img) -> Img:
     """
@@ -831,3 +836,39 @@ def is_valid(file: str) -> bool:
     except OSError:
         valid = True
     return valid
+
+
+def auto_resize_text(
+        text: str,
+        original_size: int,
+        font: str,
+        limit_box: Union[Box, Tuple[int, int]],
+        color: Union[str, Tuple[int, int, int], Tuple[int, int, int, int]] = 'black',
+) -> Img:
+    """
+    说明：
+        生成自适应Box大小的文本图片
+        基础是simple_text
+    参数：
+        :param text:
+        :param original_size:
+        :param font:
+        :param limit_box:
+        :param color:
+        :return:
+    """
+    if isinstance(limit_box, Box):
+        limit_tuple = limit_box.size
+    else:
+        limit_tuple = limit_box
+    init_text_img = simple_text(text, original_size, font, color)
+    init_size = init_text_img.size
+    # 计算超出比例，超出时对应维度的radio为正
+    radio_comp = tuple(map(lambda x, y: (x-y)/y, init_size, limit_tuple))
+    max_radio = max(radio_comp)
+    if max_radio > 0:
+        img = ImageFactory(init_text_img)
+        img.resize(ratio=(1 / (max_radio + 1)))
+        return img.img
+    else:
+        return init_text_img
