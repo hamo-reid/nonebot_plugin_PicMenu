@@ -2,8 +2,10 @@ from .menus import MenuManager
 from .img_tool import img2b64
 
 from nonebot import get_driver
+from nonebot.matcher import Matcher
+from nonebot.params import Depends
 from nonebot.plugin import PluginMetadata
-from nonebot.plugin.on import on_startswith
+from nonebot.plugin.on import on_startswith, on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.adapters.onebot.v11.message import MessageSegment
 import re
@@ -38,16 +40,30 @@ driver = get_driver()
 
 menu_manager = MenuManager()
 menu = on_startswith('菜单', priority=1)
+switch = on_fullmatch('开关菜单', priority=1)
 
+menu_switch = True
 
 @driver.on_bot_connect
-async def _(bot: Bot):
+async def _():
     if not menu_manager.data_manager.plugin_menu_data_list:
         menu_manager.load_plugin_info()
 
+@switch.handle()
+async def _():
+    global menu_switch
+    menu_switch = not menu_switch
+    if menu_switch:
+        await switch.finish(MessageSegment.text('菜单已开启'))
+    else:
+        await switch.finish(MessageSegment.text('菜单已关闭'))
+
+async def check_switch(matcher: Matcher):
+    if not menu_switch:
+        matcher.skip()
 
 @menu.handle()
-async def _(event: Event):
+async def _(event: Event, check=Depends(check_switch)):
     msg = str(event.get_message())
     if match_result := re.match(r'^菜单 (.*?) (.*?)$|^/菜单 (.*?) (.*?)$', msg):
         result = [x for x in match_result.groups() if x is not None]
