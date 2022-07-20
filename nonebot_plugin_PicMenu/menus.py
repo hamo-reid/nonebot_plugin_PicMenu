@@ -590,9 +590,11 @@ class DataManager(object):
         descriptions = [
             menu_data.description for menu_data in self.plugin_menu_data_list
         ]
+        plugin_meta_names = []
         for plugin_name in self.original_plugin_names:
             descriptions.append(nonebot.plugin.get_plugin(plugin_name).metadata.description)
-        return self.plugin_names + self.original_plugin_names, descriptions
+            plugin_meta_names.append(nonebot.plugin.get_plugin(plugin_name).metadata.name)
+        return self.plugin_names + plugin_meta_names, descriptions
 
     def get_plugin_menu_data(self, plugin_name: str) -> Union[PluginMenuData, PluginMetadata, str]:
         """
