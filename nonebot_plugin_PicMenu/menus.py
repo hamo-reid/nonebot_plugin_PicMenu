@@ -110,16 +110,17 @@ class Template(PicTemplate):
     def generate_main_menu(self, data) -> Image:
         # 列数
         column_count = len(data) + 1
-        # 行数
+        # 数据行数
         row_count = len(data[0])
-        # 数据尺寸测算
-        row_size_list = []
+        # 数据及表头尺寸测算
+        row_size_list = [tuple(
+                map(lambda _x: calculate_text_size(_x, self.basic_font_size, self.using_font),
+                    ('序号', '插件名', '插件描述'))
+        )]
+        # 计算id，插件名，插件描述的尺寸
         for x in range(row_count):
-            # 计算index的尺寸
             index_size = calculate_text_size(str(x + 1), self.basic_font_size, self.using_font)
-            # 计算插件名的尺寸
             plugin_name_size = calculate_text_size(data[0][x], self.basic_font_size, self.using_font)
-            # 计算description的尺寸
             plugin_description_size = multi_text(data[1][x],
                                                  default_font=self.using_font,
                                                  default_size=25,
@@ -129,7 +130,7 @@ class Template(PicTemplate):
         # 单元格边距
         margin = 10
         # 确定每行的行高
-        row_height_list = [max(map(lambda i: i[1], row_size_list[x])) + margin * 2 for x in range(row_count)]
+        row_height_list = [max(map(lambda i: i[1], row_size_list[x])) + margin * 2 for x in range(row_count + 1)]
         # 确定每列的列宽
         col_max_width_tuple = (
             max((x[0][0] + margin * 2 for x in row_size_list)),
@@ -145,7 +146,7 @@ class Template(PicTemplate):
         # 绘制基点和移动锚点
         initial_point, basis_point = (1, 1), [1, 1]
         # 为单元格添加box和绘制边框
-        for row_id in range(row_count):
+        for row_id in range(row_count + 1):
             for col_id in range(column_count):
                 box_size = (col_max_width_tuple[col_id], row_height_list[row_id])
                 table.add_box(f'box_{row_id}_{col_id}',
@@ -156,17 +157,25 @@ class Template(PicTemplate):
             basis_point[0] = initial_point[0]
             basis_point[1] += row_height_list[row_id]
         # 向单元格中填字
+        for i, text in enumerate(('序号', '插件名', '插件描述')):
+            header = simple_text(text, self.basic_font_size, self.using_font, self.colors['blue'])
+            table.img_paste(
+                header,
+                table.align_box(f'box_0_{i}', header, align='center'),
+                isalpha=True
+            )
         for x in range(row_count):
-            id_text = simple_text(str(x + 1), self.basic_font_size, self.using_font, self.colors['blue'])
+            row_id = x + 1
+            id_text = simple_text(str(row_id), self.basic_font_size, self.using_font, self.colors['blue'])
             table.img_paste(
                 id_text,
-                table.align_box(f'box_{x}_0', id_text, align='center'),
+                table.align_box(f'box_{row_id}_0', id_text, align='center'),
                 isalpha=True
             )
             plugin_name_text = simple_text(data[0][x], self.basic_font_size, self.using_font, self.colors['blue'])
             table.img_paste(
                 plugin_name_text,
-                table.align_box(f'box_{x}_1', plugin_name_text, align='center'),
+                table.align_box(f'box_{row_id}_1', plugin_name_text, align='center'),
                 isalpha=True
             )
             plugin_description_text = multi_text(data[1][x],
@@ -177,10 +186,11 @@ class Template(PicTemplate):
                                                  )
             table.img_paste(
                 plugin_description_text,
-                table.align_box(f'box_{x}_2', plugin_description_text, align='center'),
+                table.align_box(f'box_{x+1}_2', plugin_description_text, align='center'),
                 isalpha=True
             )
         table_size = table.img.size
+        # 添加注释
         note_basic_text = simple_text('注：',
                                       size=self.basic_font_size,
                                       color=self.colors['blue'],
@@ -234,8 +244,13 @@ class Template(PicTemplate):
         data = plugin_data.funcs
         column_count = 5
         row_count = len(data)
-        # 数据尺寸测算
-        row_size_list = []
+        # 数据及表头尺寸测算
+        row_size_list = [tuple(
+            map(
+                lambda _x: calculate_text_size(_x, self.basic_font_size, self.using_font),
+                ('序号', '功能', '触发方式', '触发条件', '功能简述')
+            )
+        )]
         for index, func_data in enumerate(data):
             index_size = calculate_text_size(str(index + 1), self.basic_font_size, self.using_font)
             func_size = calculate_text_size(func_data.func, self.basic_font_size, self.using_font)
@@ -250,7 +265,7 @@ class Template(PicTemplate):
         # 边距
         margin = 10
         # 测行高
-        row_height_list = [max(map(lambda i: i[1], row_size_list[x])) + margin * 2 for x in range(row_count)]
+        row_height_list = [max(map(lambda i: i[1], row_size_list[x])) + margin * 2 for x in range(row_count+1)]
         col_max_width_tuple = (
             max((x[0][0] + margin * 2 for x in row_size_list)),
             max((x[1][0] + margin * 2 for x in row_size_list)),
@@ -266,7 +281,7 @@ class Template(PicTemplate):
         )
         initial_point, basis_point = (1, 1), [1, 1]
         # 建立基准box
-        for row_id in range(row_count):
+        for row_id in range(row_count + 1):
             for col_id in range(column_count):
                 box_size = (col_max_width_tuple[col_id], row_height_list[row_id])
                 table.add_box(f'box_{row_id}_{col_id}',
@@ -276,20 +291,29 @@ class Template(PicTemplate):
                 basis_point[0] += box_size[0]
             basis_point[0] = initial_point[0]
             basis_point[1] += row_height_list[row_id]
+        # 向单元格中填字
+        for i, text in enumerate(('序号', '功能', '触发方式', '触发条件', '功能简述')):
+            header = simple_text(text, self.basic_font_size, self.using_font, self.colors['blue'])
+            table.img_paste(
+                header,
+                table.align_box(f'box_0_{i}', header, align='center'),
+                isalpha=True
+            )
         # 填字
         for index, func_data in enumerate(data):
+            row_id = index + 1
             # 第一个cell填id
-            id_text = simple_text(str(index + 1), self.basic_font_size, self.using_font, self.colors['blue'])
+            id_text = simple_text(str(row_id), self.basic_font_size, self.using_font, self.colors['blue'])
             table.img_paste(
                 id_text,
-                table.align_box(f'box_{index}_0', id_text, align='center'),
+                table.align_box(f'box_{row_id}_0', id_text, align='center'),
                 isalpha=True
             )
             # 第二个cell里填func（功能）
             func_text = simple_text(func_data.func, self.basic_font_size, self.using_font, self.colors['blue'])
             table.img_paste(
                 func_text,
-                table.align_box(f'box_{index}_1', func_text, align='center'),
+                table.align_box(f'box_{row_id}_1', func_text, align='center'),
                 isalpha=True
             )
             # 第三个cell里填trigger_method（触发方式）
@@ -297,7 +321,7 @@ class Template(PicTemplate):
                                               self.colors['blue'])
             table.img_paste(
                 trigger_method_text,
-                table.align_box(f'box_{index}_2', trigger_method_text, align='center'),
+                table.align_box(f'box_{row_id}_2', trigger_method_text, align='center'),
                 isalpha=True
             )
             # 第四个cell里填trigger_condition（触发条件）
@@ -305,7 +329,7 @@ class Template(PicTemplate):
                                                  self.colors['blue'])
             table.img_paste(
                 trigger_condition_text,
-                table.align_box(f'box_{index}_3', trigger_condition_text, align='center'),
+                table.align_box(f'box_{row_id}_3', trigger_condition_text, align='center'),
                 isalpha=True
             )
             # 第五个cell里填brief_des（功能简述）
@@ -317,7 +341,7 @@ class Template(PicTemplate):
                                         )
             table.img_paste(
                 brief_des_text,
-                table.align_box(f'box_{index}_4', brief_des_text, align='center'),
+                table.align_box(f'box_{row_id}_4', brief_des_text, align='center'),
                 isalpha=True
             )
         # 获取table尺寸
