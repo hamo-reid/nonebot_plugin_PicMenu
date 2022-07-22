@@ -16,7 +16,11 @@
 <a href="https://pypi.python.org/pypi/nonebot_plugin_PicMenu">
     <img src="https://img.shields.io/pypi/dm/nonebot_plugin_PicMenu" alt="pypi download">
 </a>
- 
+
+<a href="https://github.com/hamo-reid/nonebot_plugin_PicMenu/commits/main">
+    <img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/hamo-reid/nonebot_plugin_PicMenu/main?style=plastic">
+</a>
+
 </div>
 
 ---
@@ -33,7 +37,9 @@
 
 ## 如何添加菜单
 
-参考插件中__init__.py或者参考以下代码
+在需要添加菜单的插件中添加如下格式的代码
+
+<font color="orange">PluginMetadata需要nb2 2.0.0-beta4版本</font>
 
 **Example:**
 
@@ -63,7 +69,17 @@ __plugin_meta__ = PluginMetadata(
 )
 ```
 
-**注：plugin_meta中extra无menu_data键值依然可以加载菜单，但无三级菜单**
+**注：如下格式依然可以加载菜单，但无三级菜单**
+
+```python
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
+    name='测试插件',
+    description='测试',
+    usage='/test'
+)
+```
 
 ## 如何使用插件
 
