@@ -89,6 +89,14 @@ __plugin_meta__ = PluginMetadata(
 2. 修改menu_config/config.json 中 "default"的值为任一字体的路径（不要有反斜杠）</br>字体格式为[PIL.ImageFont.truetype](https://pillow.readthedocs.io/en/stable/reference/ImageFont.html?highlight=truetype#PIL.ImageFont.truetype)所支持的字体
 3. 保存config.json后重启bot即可使用菜单
 
+### 菜单开关
+
+切换菜单开启或关闭，命令如下：
+
+```qq
+菜单开关
+```
+
 > 以下示例均为默认模板 字体：等线 常规
 
 ### 获取所有已加载插件的菜单[一级菜单]
