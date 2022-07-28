@@ -495,13 +495,13 @@ def multi_text(text: str,
                     elif _param[0] == 'color':
                         rgba_result = re.findall(r'\d+', _param[1])
                         if len(rgba_result) in [3, 4]:
-                            color = (int(x) for x in _param[1])
+                            color = tuple((int(x) for x in rgba_result))
                         else:
                             color = _param[1]
                     elif _param[0] == 'stroke_fill':
                         rgba_result = re.findall(r'\d+', _param[1])
                         if len(rgba_result) in [3, 4]:
-                            stroke_fill = (int(x) for x in _param[1])
+                            stroke_fill = tupe((int(x) for x in rgba_result))
                         else:
                             stroke_fill = _param[1]
                 # 特殊文本外的结果储存
