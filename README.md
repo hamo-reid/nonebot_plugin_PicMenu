@@ -153,31 +153,31 @@ __plugin_meta__ = PluginMetadata(
 
 ---
 
-## 菜单高级信息
+## 菜单富文本
 
-menu_info 中brief_des和detail_des可以实现高级效果
+menu_info 中brief_des和detail_des可以实现部分富文本效果
 
 **Example:**
 
 ```python
-from nonebot.plugin importPluginMetadata
+from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(
-    name='怪插件',
-    description='很奇怪',
-    usage='怪',
+    name='演示插件',
+    description='演示',
+    usage='无',
     extra={
         'menu_data': [
             {
-                'func': '恶臭',
-                'trigger_method': 'on_cmd',
-                'trigger_condition': '/恶臭',
-                'brief_des': '<ft color=green>哼哼哼</ft>',
-                'detail_des': '<ft size=40>哼哼哼</ft><ft color=red>啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊</ft>'
-            },
-            {
-                ......
-            },
+                'func': '演示',
+                'trigger_method': '......',
+                'trigger_condition': '......',
+                'brief_des': '演示用',
+                'detail_des': '<ft size=20>这是一个演示</ft>\n'
+                              '<ft size=20 color=red>这是一个演示</ft>\n'
+                              '<ft size=20 color=(0,0,255)>这是一个演示</ft>\n'
+                              '这是一个<ft size=40>演示</ft>\n'
+            }
         ],
         'menu_template': 'default'
     }
@@ -186,14 +186,12 @@ __plugin_meta__ = PluginMetadata(
 
 效果展示:
 
-![高级信息1](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuA1.jpg)
+![富文本信息1](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuA1.jpg)
 
-![高级信息2](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/show_pic/menuA2.jpg)
-
-其中支持高级信息的数据:
+其中支持富文本的数据:
 
 - PluginMetadata.usage
 - brief_des
 - detail_des
 
-高级信息可支持的用法见源码nonebot_plugin_PicMenu.img_tool中multi_text方法
+富文本可支持的用法见源码nonebot_plugin_PicMenu.img_tool中multi_text方法
