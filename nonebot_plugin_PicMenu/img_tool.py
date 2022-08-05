@@ -501,7 +501,7 @@ def multi_text(text: str,
                     elif _param[0] == 'stroke_fill':
                         rgba_result = re.findall(r'\d+', _param[1])
                         if len(rgba_result) in [3, 4]:
-                            stroke_fill = tupe((int(x) for x in rgba_result))
+                            stroke_fill = tuple((int(x) for x in rgba_result))
                         else:
                             stroke_fill = _param[1]
                 # 特殊文本外的结果储存

@@ -12,7 +12,7 @@ import abc
 import json
 from nonebot import logger
 from pathlib import Path
-from typing import Union, Dict, Optional, List, Tuple
+from typing import Union, List, Tuple
 from dataclasses import dataclass
 from fuzzywuzzy import process, fuzz
 from PIL import Image
@@ -564,7 +564,8 @@ class DataManager(object):
     def __init__(self):
         self.plugin_menu_data_list: List[PluginMenuData] = []  # 存放menu数据的列表
         self.plugin_names: List[str] = []  # 有menu_data的插件名列表
-        self.original_plugin_names: List[str] = []  # 无menu_data，但有meta_data的插件名列表
+        self.original_plugin_meta_names = []
+        self.original_plugin_names = []
 
     def load_plugin_info(self):
         # 取已经加载的插件信息
@@ -583,6 +584,7 @@ class DataManager(object):
                     menu_template = 'default'
             else:
                 self.original_plugin_names.append(plugin.name)
+                self.original_plugin_meta_names.append(meta_data.name)
                 logger.opt(colors=True).success(f'<y>{meta_data.name}</y> 菜单数据已加载')
                 continue
             # 数据整合
@@ -614,11 +616,9 @@ class DataManager(object):
         descriptions = [
             menu_data.description for menu_data in self.plugin_menu_data_list
         ]
-        plugin_meta_names = []
         for plugin_name in self.original_plugin_names:
             descriptions.append(nonebot.plugin.get_plugin(plugin_name).metadata.description)
-            plugin_meta_names.append(nonebot.plugin.get_plugin(plugin_name).metadata.name)
-        return self.plugin_names + plugin_meta_names, descriptions
+        return self.plugin_names + self.original_plugin_meta_names, descriptions
 
     def get_plugin_menu_data(self, plugin_name: str) -> Union[PluginMenuData, PluginMetadata, str]:
         """
@@ -639,12 +639,13 @@ class DataManager(object):
             else:  # 超限处理
                 return 'PluginIndexOutRange'
         else:  # 模糊匹配
-            result = self.fuzzy_match_and_check(plugin_name, self.plugin_names + self.original_plugin_names)
+            result = self.fuzzy_match_and_check(plugin_name, self.plugin_names + self.original_plugin_meta_names)
             # 空值返回异常字符串
             if result is not None:
                 # 判断插件是否是无menu_data的插件
-                if result in self.original_plugin_names:
-                    return nonebot.plugin.get_plugin(result).metadata
+                if result in self.original_plugin_meta_names:
+                    true_name_index = self.original_plugin_meta_names.index(result)
+                    return nonebot.plugin.get_plugin(self.original_plugin_names[true_name_index]).metadata
                 else:
                     for plugin_data in self.plugin_menu_data_list:
                         if result == plugin_data.name:
