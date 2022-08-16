@@ -1,9 +1,9 @@
 import _io
 import base64
+import re
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Literal, Tuple, Union, Any, List
-import re
+from typing import Optional, Literal, Tuple, Union, List
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, PngImagePlugin
 from PIL.Image import Image as Img

@@ -1,11 +1,3 @@
-# -*- coding:utf-8 -*-
-# @Author   : Hamo
-# @Email    : 190395489@qq.com
-# @Time     : 2022/8/7 11:59
-# @File     : metadata.py
-# @Faction  :
-# @Version  :
-# ===============程序开始===============
 from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(
@@ -29,7 +21,7 @@ __plugin_meta__ = PluginMetadata(
                               '查看命令详情：菜单 插件名/编号 命令/命令编号\n'
                               '插件名和命令均支持模糊查找'
             },
-{
+            {
                 'func': '开关菜单',
                 'trigger_method': '命令：开关菜单',
                 'trigger_condition': '完全匹配[SUPERUSER,ADMIN]',
