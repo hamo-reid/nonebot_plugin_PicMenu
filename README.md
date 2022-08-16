@@ -27,7 +27,7 @@
 
 ## 特性
 
-- 使用PluginMetadata加载数据
+- 使用PluginMetadata或JSON加载数据
 - 所有信息以图片方式呈现
 - 共三级菜单，依次显示插件总表、插件功能总表、功能详情
 - 查询时插件名和功能支持模糊匹配
@@ -36,6 +36,8 @@
 ## [更新记录](https://github.com/hamo-reid/nonenot_plugin_PicMenu/blob/main/History.md)
 
 ## 如何添加菜单
+
+### 1. 从代码中添加菜单
 
 在需要添加菜单的插件中添加如下格式的代码
 
@@ -81,6 +83,37 @@ __plugin_meta__ = PluginMetadata(
 )
 ```
 
+### 2.从json文件添加菜单
+
+1. 装载插件后需启动一次bot
+2. 在bot.py目录下生成的menu_config/menus中编写json文件
+3. json文件名格式如下: [需配置菜单的插件名].json
+4. json内格式如下
+
+```json
+{
+    "name": "菜单中显示的插件名",
+    "description": "描述",
+    "usage": "用法",
+    "funcs": [
+        {
+            "func": "功能名",
+            "trigger_method": "触发方式",
+            "trigger_condition": "触发条件",
+            "brief_des": "简述",
+            "detail_des": "详细"
+        },
+        //同上
+        ...
+    ]
+}
+```
+
+**注:** 
+
+1. funcs为非必填项
+2. 对于使用pip或nb-cli下载的插件名为其包名，本地加载的为 文件/文件夹 名
+
 ## 如何使用插件
 
 ### 初次使用
@@ -96,6 +129,8 @@ __plugin_meta__ = PluginMetadata(
 ```qq
 菜单开关
 ```
+
+仅有`SUPERUSER`和`ADMIN`拥有权限
 
 > 以下示例均为默认模板 字体：等线 常规
 
