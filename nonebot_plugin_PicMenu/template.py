@@ -49,7 +49,7 @@ class PicTemplate(metaclass=abc.ABCMeta):  # 模板类
     @abc.abstractmethod
     def generate_command_details(self, func_data: FuncData) -> Image:
         """
-        生成三级级菜单抽象方法
+        生成三级菜单抽象方法
         :param func_data: FuncData对象
         :return: Image对象
         """
