@@ -44,7 +44,7 @@ async def menu_rule():
     return menu_switch
 
 
-menu = on_command("菜单", rule=menu_rule, priority=5)
+menu = on_command("菜单", aliases={"功能", "帮助"}, rule=menu_rule, priority=5)
 
 
 @menu.handle()

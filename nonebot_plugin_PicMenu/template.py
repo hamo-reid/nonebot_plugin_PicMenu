@@ -413,6 +413,7 @@ class DefaultTemplate(PicTemplate):
             )
         # 获取table尺寸
         table_size = table.img.size
+        # 用法
         usage_basic_text = simple_text(
             "用法：",
             size=self.basic_font_size,
@@ -420,13 +421,25 @@ class DefaultTemplate(PicTemplate):
             font=self.using_font,
         )
         usage_text = multi_text(
+            plugin_data.usage or "无",
+            box_size=(table_size[0] - 30 - usage_basic_text.size[0] - 10, 0),
+            default_font=self.using_font,
+            default_color=self.colors["blue"],
+            default_size=self.basic_font_size,
+        )
+        # 提示
+        tip_basic_text = simple_text(
+            "提示：",
+            size=self.basic_font_size,
+            color=self.colors["blue"],
+            font=self.using_font,
+        )
+        tip_text = multi_text(
             (
-                f"{plugin_data.usage}\n"
-                " \n"
-                "注：使用下方命令查看功能详情\n"
+                "使用下方命令获取插件功能详情\n"
                 f"[菜单 {plugin_data.name} <ft color=(224,164,25)>功能名称或序号</ft>]"
             ),
-            box_size=(table_size[0] - 30 - usage_basic_text.size[0] - 10, 0),
+            box_size=(table_size[0] - 30 - tip_basic_text.size[0] - 10, 0),
             default_font=self.using_font,
             default_color=self.colors["blue"],
             default_size=self.basic_font_size,
@@ -436,15 +449,26 @@ class DefaultTemplate(PicTemplate):
             Image.new(
                 "RGBA",
                 (
-                    usage_text.size[0] + 10 + usage_basic_text.size[0],
-                    max((usage_text.size[1], usage_basic_text.size[1])),
+                    max(
+                        usage_text.size[0] + 10 + usage_basic_text.size[0],
+                        tip_text.size[0] + 10 + tip_basic_text.size[0],
+                    ),
+                    usage_text.size[1] + 20 + tip_text.size[1],
                 ),
                 self.colors["white"],
             )
         )
+        # 用法
         usage_img.img_paste(usage_basic_text, (0, 0), isalpha=True)
         usage_img.img_paste(
             usage_text, (usage_basic_text.size[0] + 10, 0), isalpha=True
+        )
+        # 提示
+        usage_img.img_paste(tip_basic_text, (0, usage_text.size[1] + 20), isalpha=True)
+        usage_img.img_paste(
+            tip_text,
+            (tip_basic_text.size[0] + 10, usage_text.size[1] + 20),
+            isalpha=True,
         )
         usage_text_size = usage_img.img.size
         # 底部画板，大小根据table大小和usage文字大小确定
@@ -469,7 +493,7 @@ class DefaultTemplate(PicTemplate):
             main_menu.align_box(
                 "self",
                 table.img,
-                pos=(0, pos[1] + usage_text.size[1] + 20),
+                pos=(0, pos[1] + usage_text_size[1] + 20),
                 align="horizontal",
             ),
         )
