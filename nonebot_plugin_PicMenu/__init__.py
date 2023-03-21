@@ -46,8 +46,8 @@ async def _(event: Event, check=Depends(check_switch)):
     prefix_re = f"({cmd_prefix_re})?(菜单|功能|帮助) ?"
 
     if match_result := re.match(rf'^{prefix_re}(?P<name>.*?) (?P<cmd>.*?)$', msg):
-        plugin_name = match_result.group("name")
-        cmd = match_result.group("cmd")
+        plugin_name = match_result.group("name").strip()
+        cmd = match_result.group("cmd").strip()
         temp = menu_manager.generate_func_details_image(plugin_name, cmd)
         if isinstance(temp, str):
             if temp == 'PluginIndexOutRange':
@@ -64,7 +64,7 @@ async def _(event: Event, check=Depends(check_switch)):
             await menu.finish(MessageSegment.image('base64://' + img2b64(temp)))
 
     elif match_result := re.match(rf'^{prefix_re}(?P<name>.*)$', msg):
-        plugin_name = match_result.group("name")
+        plugin_name = match_result.group("name").strip()
         temp = menu_manager.generate_plugin_menu_image(plugin_name)
         if isinstance(temp, str):
             if temp == 'PluginIndexOutRange':
