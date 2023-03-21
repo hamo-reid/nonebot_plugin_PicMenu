@@ -42,10 +42,12 @@ async def check_switch(matcher: Matcher):
 @menu.handle()
 async def _(event: Event, check=Depends(check_switch)):
     msg = str(event.get_message())
-    if match_result := re.match(r'^菜单 (.*?) (.*?)$|^/菜单 (.*?) (.*?)$', msg):
-        result = [x for x in match_result.groups() if x is not None]
-        plugin_name = result[0]
-        cmd = result[1]
+    cmd_prefix_re = "|".join([x for x in driver.config.command_start if x])
+    prefix_re = f"({cmd_prefix_re})?(菜单|功能|帮助) ?"
+
+    if match_result := re.match(rf'^{prefix_re}(?P<name>.*?) (?P<cmd>.*?)$', msg):
+        plugin_name = match_result.group("name")
+        cmd = match_result.group("cmd")
         temp = menu_manager.generate_func_details_image(plugin_name, cmd)
         if isinstance(temp, str):
             if temp == 'PluginIndexOutRange':
@@ -60,9 +62,9 @@ async def _(event: Event, check=Depends(check_switch)):
                 await menu.finish(MessageSegment.text('命令过于模糊或不存在'))
         else:
             await menu.finish(MessageSegment.image('base64://' + img2b64(temp)))
-    elif match_result := re.match(r'^菜单 (.*)$|^/菜单 (.*)$', msg):
-        result = [x for x in match_result.groups() if x is not None]
-        plugin_name = result[0]
+
+    elif match_result := re.match(rf'^{prefix_re}(?P<name>.*)$', msg):
+        plugin_name = match_result.group("name")
         temp = menu_manager.generate_plugin_menu_image(plugin_name)
         if isinstance(temp, str):
             if temp == 'PluginIndexOutRange':
@@ -71,6 +73,7 @@ async def _(event: Event, check=Depends(check_switch)):
                 await menu.finish(MessageSegment.text('插件名过于模糊或不存在'))
         else:
             await menu.finish(MessageSegment.image('base64://' + img2b64(temp)))
+
     else:
         img = menu_manager.generate_main_menu_image()
         await menu.finish(MessageSegment.image('base64://' + img2b64(img)))
