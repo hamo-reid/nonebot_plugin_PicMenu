@@ -41,7 +41,7 @@ async def check_switch(matcher: Matcher):
 
 @menu.handle()
 async def _(event: Event, check=Depends(check_switch)):
-    msg = str(event.get_message())
+    msg = event.get_plaintext()
     cmd_prefix_re = "|".join([x for x in driver.config.command_start if x])
     prefix_re = f"({cmd_prefix_re})?(菜单|功能|帮助) ?"
 
