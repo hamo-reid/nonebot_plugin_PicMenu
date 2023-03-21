@@ -1,14 +1,13 @@
-import json
 import importlib
+import json
 from pathlib import Path
-from typing import Union, List, Tuple
+from typing import List, Tuple, Union
 
 import nonebot.plugin
+from fuzzywuzzy import fuzz, process
 from nonebot import logger
 from nonebot.plugin import PluginMetadata
-
 from PIL import Image
-from fuzzywuzzy import process, fuzz
 from pydantic import error_wrappers
 
 from .data_struct import PluginMenuData

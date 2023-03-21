@@ -1,18 +1,18 @@
 import abc
 import json
 from pathlib import Path
-from typing import Tuple, List
+from typing import List, Tuple
 
 from PIL import Image
 
-from .data_struct import PluginMenuData, FuncData
+from .data_struct import FuncData, PluginMenuData
 from .img_tool import (
-    simple_text,
-    multi_text,
-    calculate_text_size,
-    ImageFactory,
     Box,
+    ImageFactory,
     auto_resize_text,
+    calculate_text_size,
+    multi_text,
+    simple_text,
 )
 
 

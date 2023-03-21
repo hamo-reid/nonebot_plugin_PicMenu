@@ -1,11 +1,10 @@
-import _io
 import base64
 import re
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Literal, Tuple, Union, List
+from typing import List, Literal, Optional, Tuple, Union
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, PngImagePlugin
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, PngImagePlugin
 from PIL.Image import Image as Img
 
 
@@ -39,7 +38,7 @@ class Box(object):
 class ImageFactory(object):
     def __init__(
         self,
-        img: Union[Optional[str], Img, _io.BytesIO] = None,
+        img: Union[Optional[str], Img, BytesIO] = None,
         image_mode: str = "RGBA",
     ):
         """

@@ -1,18 +1,17 @@
 import re
 
 from nonebot import get_driver
-from nonebot.matcher import Matcher
-from nonebot.params import Depends
-from nonebot.plugin.on import on_startswith, on_fullmatch
 from nonebot.adapters.onebot.v11 import Event
 from nonebot.adapters.onebot.v11.message import MessageSegment
-from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN
+from nonebot.matcher import Matcher
+from nonebot.params import Depends
+from nonebot.permission import SUPERUSER
+from nonebot.plugin.on import on_fullmatch, on_startswith
 
-from .manager import MenuManager
 from .img_tool import img2b64
-from .metadata import __plugin_meta__
-
+from .manager import MenuManager
+from .metadata import __plugin_meta__ as __plugin_meta__
 
 driver = get_driver()
 
