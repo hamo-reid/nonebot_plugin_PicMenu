@@ -200,7 +200,7 @@ class DefaultTemplate(PicTemplate):
             font=self.using_font,
         )
         note_text = multi_text(
-            "查询菜单的详细使用方法请发送\n[菜单 PicMenu]",
+            "使用下方命令获取插件详情\n[菜单 <ft color=(224,164,25)>插件名称或序号</ft>]",
             box_size=(table_size[0] - 30 - note_basic_text.size[0] - 10, 0),
             default_font=self.using_font,
             default_color=self.colors["blue"],
@@ -420,7 +420,12 @@ class DefaultTemplate(PicTemplate):
             font=self.using_font,
         )
         usage_text = multi_text(
-            plugin_data.usage,
+            (
+                f"{plugin_data.usage}\n"
+                " \n"
+                "注：使用下方命令查看功能详情\n"
+                f"[菜单 {plugin_data.name} <ft color=(224,164,25)>功能名称或序号</ft>]"
+            ),
             box_size=(table_size[0] - 30 - usage_basic_text.size[0] - 10, 0),
             default_font=self.using_font,
             default_color=self.colors["blue"],

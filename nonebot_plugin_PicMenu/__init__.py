@@ -49,7 +49,7 @@ async def menu_rule():
 async def _(matcher: Matcher, arg: Message = CommandArg()):
     msg = arg.extract_plain_text().strip()
 
-    if not msg:
+    if not msg:  # 参数为空，主菜单
         img = menu_manager.generate_main_menu_image()
         await matcher.finish(MessageSegment.image(img2bytes(img)))
 
@@ -60,7 +60,7 @@ async def _(matcher: Matcher, arg: Message = CommandArg()):
     plugin_name: str = match_result["name"]
     cmd: Union[str, None] = match_result["cmd"]
 
-    if cmd:
+    if cmd:  # 三级菜单
         temp = menu_manager.generate_func_details_image(plugin_name, cmd)
 
         if not isinstance(temp, str):
@@ -76,7 +76,7 @@ async def _(matcher: Matcher, arg: Message = CommandArg()):
             await matcher.finish("命令序号不存在")
         await matcher.finish("命令过于模糊或不存在")
 
-    else:
+    else:  # 二级菜单
         temp = menu_manager.generate_plugin_menu_image(plugin_name)
 
         if not isinstance(temp, str):

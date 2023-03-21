@@ -218,12 +218,12 @@ class MenuManager(object):  # 菜单总管理
             ) as fp:
                 fp.write(json.dumps({"default": "font_path"}))
 
-    def generate_main_menu_image(self) -> Image:  # 生成主菜单图片
+    def generate_main_menu_image(self) -> Image.Image:  # 生成主菜单图片
         data = self.data_manager.get_main_menu_data()
         template = self.template_manager.select_template("default")
         return template().generate_main_menu(data)
 
-    def generate_plugin_menu_image(self, plugin_name) -> Image:  # 生成二级菜单图片
+    def generate_plugin_menu_image(self, plugin_name) -> Image.Image:  # 生成二级菜单图片
         init_data = self.data_manager.get_plugin_menu_data(plugin_name)
         if isinstance(init_data, str):  # 判断是否匹配到插件
             return init_data
@@ -234,7 +234,7 @@ class MenuManager(object):  # 菜单总管理
             else:
                 return template().generate_original_plugin_menu(init_data)
 
-    def generate_func_details_image(self, plugin_name, func) -> Image:  # 生成三级菜单图片
+    def generate_func_details_image(self, plugin_name, func) -> Image.Image:  # 生成三级菜单图片
         plugin_data = self.data_manager.get_plugin_menu_data(plugin_name)
         if isinstance(plugin_data, str):  # 判断是否匹配到插件
             return plugin_data
