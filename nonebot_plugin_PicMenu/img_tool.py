@@ -839,7 +839,7 @@ def hex_to_rgb(hex_color: str, alpha: int = None) -> tuple:
     return color
 
 
-def img2b64(pic: Image) -> str:
+def img2bytes(pic: Image) -> bytes:
     """
     说明：
         PIL图片转base64
@@ -849,8 +849,7 @@ def img2b64(pic: Image) -> str:
     """
     buf = BytesIO()
     pic.save(buf, format="PNG")
-    base64_str = base64.b64encode(buf.getvalue()).decode()
-    return base64_str
+    return buf.getvalue()
 
 
 def pic2b64(path: Union[str, Path]) -> str:
