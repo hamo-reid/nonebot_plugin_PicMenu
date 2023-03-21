@@ -23,11 +23,10 @@ async def _():
 
 
 menu_manager = MenuManager()
-menu = on_command("菜单", priority=5)
-switch = on_fullmatch("开关菜单", permission=SUPERUSER | GROUP_ADMIN, priority=5)
-
-
 menu_switch = True
+
+
+switch = on_fullmatch("开关菜单", permission=SUPERUSER | GROUP_ADMIN, priority=5)
 
 
 @switch.handle()
@@ -45,7 +44,10 @@ async def menu_rule():
     return menu_switch
 
 
-@menu.handle(rule=menu_rule)
+menu = on_command("菜单", rule=menu_rule, priority=5)
+
+
+@menu.handle()
 async def _(matcher: Matcher, arg: Message = CommandArg()):
     msg = arg.extract_plain_text().strip()
 
