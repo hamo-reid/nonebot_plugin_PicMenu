@@ -44,25 +44,48 @@ def fuzzy_match_and_check(item: str, match_list: List[str]) -> Union[None, str]:
 
 
 class DataManager(object):
-    def __init__(self):
+    def __init__(self, is_superuser: bool = False):
+        self.is_superuser: bool = is_superuser
         self.plugin_menu_data_list: List[PluginMenuData] = []  # 存放menu数据的列表
         self.plugin_names: List[str] = []  # 有menu_data的插件名列表
 
     def load_plugin_info(self):
         def load_from_dict(_meta_data: PluginMetadata):
-            self.plugin_menu_data_list.append(
-                PluginMenuData(
-                    name=_meta_data.name,
-                    description=_meta_data.description,
-                    usage=_meta_data.usage,
-                    funcs=_meta_data.extra["menu_data"]
-                    if "menu_data" in _meta_data.extra
-                    else None,
-                    template=_meta_data.extra["menu_template"]
-                    if "menu_template" in _meta_data.extra
-                    else "default",
+            if self.is_superuser:
+                self.plugin_menu_data_list.append(
+                    PluginMenuData(
+                        name=_meta_data.name,
+                        description=_meta_data.description,
+                        usage=_meta_data.usage,
+                        funcs=_meta_data.extra["menu_data"]
+                        if "menu_data" in _meta_data.extra
+                        else None,
+                        template=_meta_data.extra["menu_template"]
+                        if "menu_template" in _meta_data.extra
+                        else "default",
+                        is_superuser=_meta_data.extra["is_superuser"]
+                        if "is_superuser" in _meta_data.extra
+                        else False,
+                    )
                 )
-            )
+            else:
+                if "is_superuser" not in _meta_data.extra or not _meta_data.extra["is_superuser"]:
+                    self.plugin_menu_data_list.append(
+                        PluginMenuData(
+                            name=_meta_data.name,
+                            description=_meta_data.description,
+                            usage=_meta_data.usage,
+                            funcs=_meta_data.extra["menu_data"]
+                            if "menu_data" in _meta_data.extra
+                            else None,
+                            template=_meta_data.extra["menu_template"]
+                            if "menu_template" in _meta_data.extra
+                            else "default",
+                            is_superuser=_meta_data.extra["is_superuser"]
+                            if "is_superuser" in _meta_data.extra
+                            else False,
+                        )
+                    )
 
         def load_from_json(_json_path: Path):
             menu_data_dict = json.loads(_json_path.read_text(encoding="utf-8"))
@@ -193,10 +216,11 @@ class TemplateManager(object):
 
 
 class MenuManager(object):  # 菜单总管理
-    def __init__(self):
+    def __init__(self, is_superuser: bool = False, ):
         self.cwd = Path.cwd()
+        self.is_superuser = is_superuser
         self.config_folder_make()
-        self.data_manager = DataManager()
+        self.data_manager = DataManager(self.is_superuser)
         self.template_manager = TemplateManager()
 
     def load_plugin_info(self):

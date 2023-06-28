@@ -19,3 +19,4 @@ class PluginMenuData(BaseModel):
     usage: str
     funcs: Union[List[FuncData], None] = None
     template: str = "default"
+    is_superuser: bool = False
