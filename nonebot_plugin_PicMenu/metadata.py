@@ -7,6 +7,8 @@ __plugin_meta__ = PluginMetadata(
     "显示某一插件的功能菜单：菜单 插件名/序号\n"
     "显示某一功能详情：菜单 插件名/序号 功能名/序号\n"
     "注：插件名/功能名 支持模糊匹配",
+    type='application',
+    homepage='https://github.com/hamo-reid/nonebot_plugin_PicMenu',
     extra={
         "author": "hamo-reid",
         "menu_data": [
