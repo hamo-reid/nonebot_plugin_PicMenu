@@ -61,6 +61,9 @@ class DataManager(object):
                     template=_meta_data.extra["menu_template"]
                     if "menu_template" in _meta_data.extra
                     else "default",
+                    no=_meta_data.extra["menu_no"]
+                    if "menu_no" in _meta_data.extra
+                    else 99,
                 )
             )
 
@@ -106,7 +109,7 @@ class DataManager(object):
                             f'<y>__plugin_meta__.extra["menu_data"] 缺少必要键值对</y>: \n'
                             f"{e}"
                         )
-        self.plugin_menu_data_list.sort(key=lambda x: x.name.encode("gbk"))
+        self.plugin_menu_data_list.sort(key=lambda x: x.no)
         self.plugin_names = [menu_data.name for menu_data in self.plugin_menu_data_list]
 
     def get_main_menu_data(self) -> Tuple[List, List]:
