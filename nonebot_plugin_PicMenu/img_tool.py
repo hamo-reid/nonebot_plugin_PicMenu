@@ -288,7 +288,7 @@ class ImageFactory(object):
         start_pos = box_pos
         end_pos = (box_pos[0] + box_size[0], box_pos[1] + box_size[1])
         if color is not None:
-            if len(color) == 3 or type(color) == str:
+            if len(color) == 3 or isinstance(color, str):
                 self.draw.rectangle((*start_pos, *end_pos), color, outline, width)
             elif len(color) == 4:
                 self.img_paste(Image.new("RGBA", box_size, color=color), box_pos)
@@ -394,8 +394,8 @@ def simple_text(
     :return:
     """
     using_font = ImageFont.truetype(font, size)
-    pic_size = using_font.getsize(text)
-    pic = Image.new("RGBA", pic_size, (0, 0, 0, 0))
+    (left, _, right, bottom) = using_font.getbbox(text)
+    pic = Image.new("RGBA", (right - left, bottom), (0, 0, 0, 0))
     draw = ImageDraw.Draw(pic)
     draw.text((0, 0), text, fill=color, font=using_font)
     return pic
@@ -410,7 +410,8 @@ def calculate_text_size(text: str, size: int, font: Union[str, Path]):
     :return:
     """
     using_font = ImageFont.truetype(font, size)
-    return using_font.getsize(text)
+    (left, _, right, bottom) = using_font.getbbox(text)
+    return right - left, bottom
 
 
 def multi_text(
@@ -551,7 +552,8 @@ def multi_text(
             for i, piece in enumerate(line):
                 using_font = ImageFont.truetype(piece["fonts"], piece["size"])
                 for cha in piece["text"]:
-                    cha_width, _ = using_font.getsize(cha)
+                    left, _, right, _= using_font.getbbox(cha)
+                    cha_width = right - left
                     new_line_width += cha_width
                     if new_line_width <= box_size[0]:
                         new_piece_cha_list.append(cha)
@@ -581,7 +583,8 @@ def multi_text(
             line_height = 0
             for piece in line:
                 using_font = ImageFont.truetype(piece["fonts"], piece["size"])
-                _, piece_height = using_font.getsize(piece["text"])
+                _, _, _, bottom = using_font.getbbox(piece["text"])
+                piece_height = bottom
                 if piece_height > line_height:
                     line_height = piece_height
             if total_height + line_height + spacing > box_size[1]:
@@ -613,8 +616,9 @@ def multi_text(
             line_height, line_width = 0, 0
             for piece in line:
                 using_font = ImageFont.truetype(piece["fonts"], piece["size"])
-                piece_width = using_font.getsize(piece["text"])[0]
-                piece_height = using_font.getsize(piece["text"])[1]
+                left, _, right, bottom = using_font.getbbox(piece["text"])
+                piece_width = right - left
+                piece_height = bottom
                 line_width += piece_width
                 if piece_height > line_height:
                     line_height = piece_height
@@ -644,7 +648,8 @@ def multi_text(
         pieces_sizes = []
         for y in x:
             using_font = ImageFont.truetype(y["fonts"], y["size"])
-            pieces_sizes.append(using_font.getsize(y["text"]))
+            left, _, right, bottom = using_font.getbbox(y["text"])
+            pieces_sizes.append((right - left, bottom))
         height_list = [x[1] for x in pieces_sizes]
         width_list = [x[0] for x in pieces_sizes]
         max_height = max(height_list)
