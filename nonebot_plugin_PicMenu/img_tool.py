@@ -6,6 +6,7 @@ from typing import List, Literal, Optional, Tuple, Union
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, PngImagePlugin
 from PIL.Image import Image as Img
+from PIL.Image import Resampling
 
 
 class Box(object):
@@ -343,7 +344,7 @@ class ImageFactory(object):
             if not w and not h and ratio:
                 w = int(self.img.size[0] * ratio)
                 h = int(self.img.size[1] * ratio)
-        self.change_making_img(self.img.resize((w, h), Image.ANTIALIAS))
+        self.change_making_img(self.img.resize((w, h), Resampling.LANCZOS))
 
     def filter(self, filter_: str, aud: int = None):
         """
